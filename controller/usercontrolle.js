@@ -1,6 +1,8 @@
 import User from "../modules/user.js";
 import bcrypt from "bcrypt"; 
 import jwd from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 // This function saves a new user to the database
 export function saveUser(req, res) {
@@ -70,7 +72,7 @@ export function loginUser(req, res){
                     isDisable: user.isDisable,
                     isEmailVerified: user.isEmailVerified
                 }
-                const token = jwd.sign(userData,"rendom123")
+                const token = jwd.sign(userData,process.env.JWT_KEY)
                 res.json({
                     message: "Login successfully",
                     token: token
