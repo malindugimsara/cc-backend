@@ -75,7 +75,8 @@ export function loginUser(req, res){
                 const token = jwd.sign(userData,process.env.JWT_KEY)
                 res.json({
                     message: "Login successfully",
-                    token: token
+                    token: token,
+                    user: userData
                 })
 
             } else {

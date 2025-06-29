@@ -7,10 +7,14 @@ import productRouter from './router/productRouter.js';
 import authjwt from './middleware/auth.js';
 import orderRouter from './router/orderRouter.js';
 import dotenv from 'dotenv';
+import cors from 'cors';
+
 dotenv.config();
 const app = express();
-
+// Enable CORS for all routes
+app.use(cors());
 // Connect to MongoDB
+
 mongoose.connect(process.env.MONGO_URL).then
 (() => {
     console.log("Connected to MongoDB");
