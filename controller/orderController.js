@@ -1,6 +1,7 @@
 import Order from "../modules/order.js";
+import Product from "../modules/product.js";
 
-export function createOrder(req, res) {
+export async function createOrder(req, res) {
     if (req.user == null) {
         res.status(403).json({
             message: "You need to login first"
@@ -24,21 +25,40 @@ export function createOrder(req, res) {
         (
             {date: -1}
         ) .limit(1) // Get the last order
-        .then((lastBills) => {
+        .then(async (lastBills) => {
             if(lastBills.length == 0){
                 orderData.orderId = "ORD0001";
             }
             else {
                 const lastBill = lastBills[0];
                 const lastOrderId = lastBill.orderId;
-                const lastOrderNumber = lastOrderId.repalce("ORD", "");
+                const lastOrderNumber = lastOrderId.replace("ORD", "");
                 const lastOrderNumberInt = parseInt(lastOrderNumber);
                 const newOrderNumberInt = lastOrderNumberInt + 1;
                 const newOrderNumberStr = newOrderNumberInt.toString().padStart(4, '0');
                 orderData.orderId = "ORD" + newOrderNumberStr;
             }
 
+            for (let i = 0; i < body.billItem.length; i++) {
+                const product = await Product.findOne({
+                    productId: body.billItem[i].productId,
+                });
+                if (product == null) {
+                    res.status(400).json({
+                        message: `Product with ID ${body.billItem[i].productId} not found`
+                    });
+                    return;
+                }
 
+                orderData.billItem[i]={
+                    productId: product.productId,
+                    productName: product.name,
+                    image : product.images[0],
+                    price: product.price,
+                    quantity: body.billItem[i].quantity
+                }
+                orderData.totalPrice = orderData.totalPrice    + product.price * body.billItem[i].quantity;
+            }
 
 
             const order= new Order(orderData);
