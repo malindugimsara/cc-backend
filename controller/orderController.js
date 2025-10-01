@@ -110,3 +110,33 @@ export function getOrder(req, res) {
     }
 
 }
+
+export async function updateOrderStatus(req, res) {
+    try {
+        if (req.user == null) {
+            res.status(403).json({
+                message: "You need to login first"
+            });
+            return;
+        }
+        if (req.user.role != "admin") {
+            res.status(403).json({
+                message: "You are not authorized to update order status"
+            });
+            return;
+        }
+        const orderId = req.params.orderId;
+        const order = await Order.findOneAndUpdate({ orderId: orderId}, req.body);
+
+        res.json({
+            message: "Order status updated successfully",
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            message: "Order not Update",
+            error: error.message
+        });
+        return;
+    }
+}

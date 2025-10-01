@@ -1,5 +1,5 @@
 import express from 'express';
-import { loginUser, saveUser } from '../controller/usercontrolle.js';
+import { googleLogin, loginUser, saveUser } from '../controller/usercontrolle.js';
 
 // Create a new router for user-related routes
 const userRouter = express.Router();
@@ -9,5 +9,8 @@ userRouter.post('/',saveUser)
 
 // Define the route for logging in a user
 userRouter.post('/login', loginUser)
+
+//google login
+userRouter.post('/google', googleLogin)
 
 export default userRouter;

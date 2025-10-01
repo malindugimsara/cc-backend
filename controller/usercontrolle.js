@@ -2,6 +2,8 @@ import User from "../modules/user.js";
 import bcrypt from "bcrypt"; 
 import jwd from "jsonwebtoken";
 import dotenv from "dotenv";
+import axios from "axios";
+import e from "express";
 dotenv.config();
 
 // This function saves a new user to the database
@@ -72,7 +74,9 @@ export function loginUser(req, res){
                     isDisable: user.isDisable,
                     isEmailVerified: user.isEmailVerified
                 }
-                const token = jwd.sign(userData,process.env.JWT_KEY)
+                const token = jwd.sign(userData,process.env.JWT_KEY,{
+                    expiresIn: "48hrs" // Token
+                })
                 res.json({
                     message: "Login successfully",
                     token: token,
@@ -86,4 +90,73 @@ export function loginUser(req, res){
             }
         }
     })
+}
+
+export async function googleLogin(req, res) {
+    const accessToken = req.body.accessToken;
+    try {
+        const response = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        console.log(response);
+        const user = await User.findOne({ email: response.data.email });
+        if (user == null) {
+            const newUser = new User({
+                email: response.data.email,
+                firstName: response.data.given_name,
+                lastName: response.data.family_name,
+                password: accessToken,
+                isEmailVerified : true
+            });
+            await newUser.save();
+            
+            const userData = {
+                email: response.data.email,
+                firstName: response.data.given_name,
+                lastName: response.data.family_name,
+                role: "user",
+                phoneNumber: "Not given",
+                isDisable: false,
+                isEmailVerified: true
+            }
+
+            const token = jwd.sign(userData,process.env.JWT_KEY,{
+                expiresIn: "48hrs" // Token
+            })
+            res.json({
+                message: "Login successfully",
+                token: token,
+                user: userData
+            })
+        }
+        else {
+            const userData = {
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                phoneNumber: user.phoneNumber,
+                isDisable: user.isDisable,
+                isEmailVerified: user.isEmailVerified
+            }
+
+            const token = jwd.sign(userData,process.env.JWT_KEY,{
+                expiresIn: "48hrs" // Token
+            })
+            res.json({
+                message: "Login successfully",
+                token: token,
+                user: userData
+            })
+        }
+    }
+    catch (error) {
+        console.error("Error during Google login:", error);
+        res.status(500).json({
+            message: "Error during Google login",
+            error: error.message
+        });
+    }
 }
