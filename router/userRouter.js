@@ -1,5 +1,6 @@
 import express from 'express';
-import { googleLogin, loginUser, saveUser } from '../controller/usercontrolle.js';
+import { getCurrentUser, googleLogin, loginUser, saveUser } from '../controller/usercontrolle.js';
+import { get } from 'mongoose';
 
 // Create a new router for user-related routes
 const userRouter = express.Router();
@@ -12,5 +13,7 @@ userRouter.post('/login', loginUser)
 
 //google login
 userRouter.post('/google', googleLogin)
+
+userRouter.get('/current', getCurrentUser);
 
 export default userRouter;

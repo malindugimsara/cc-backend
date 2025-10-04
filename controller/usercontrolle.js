@@ -160,3 +160,14 @@ export async function googleLogin(req, res) {
         });
     }
 }
+
+export function getCurrentUser(req, res) {
+    if (req.user == null) {
+        res.status(403).json({
+            message: "You need to login first"
+        });
+        return;
+    }
+    res.json({
+        user: req.user});
+}   
